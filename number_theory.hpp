@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 
 namespace NumberTheory {
 constexpr bool is_prime_slow(int p) {
@@ -92,56 +93,81 @@ constexpr bool is_quadratic_residue(const IntegerType num,
   return fermat_value == 0 || fermat_value == 1;
 }
 
-// Implementation from https://www.rieselprime.de/ziki/Modular_square_root
+// Implementations of square roots mod primes taken from
+// https://www.rieselprime.de/ziki/Modular_square_root
 template <class IntegerType>
-constexpr IntegerType sqrt_mod(IntegerType num, IntegerType p) {
-  if (!is_prime_slow(p))
-    throw std::runtime_error("sqrt_mod expects a prime modulus, got " +
+constexpr IntegerType sqrt_mod_8k_plus_5(const IntegerType num,
+                                         const IntegerType p) {
+  if (p < 0 || p % 8 != 5 || !is_prime_slow(p))
+    throw std::runtime_error("sqrt_mod_8k_plus_5 expects a positive prime "
+                             "modulus congruent to 5 mod 8, got " +
                              std::to_string(p));
-  num %= p;
+  const IntegerType two = 2;
+  const IntegerType twice_num = mul_mod(two, num, p);
+  // The source above mentions (p - 5) / 8 but these are equivalent since
+  // integer division rounds downwards
+  const IntegerType v = pow_mod(twice_num, p / 8, p);
+  const IntegerType num_v = mul_mod(num, v, p);
+  const IntegerType i = mul_mod(mul_mod(twice_num, v, p), v, p);
+  // i is guaranteed not to be 0, so i - 1 >= 0
+  return mul_mod(num_v, i - 1, p);
+}
+
+template <class IntegerType>
+IntegerType sqrt_mod_8k_plus_1(const IntegerType num, const IntegerType p) {
+  if (p < 0 || p % 8 != 1 || !is_prime_slow(p))
+    throw std::runtime_error("sqrt_mod_8k_plus_1 expects a positive prime "
+                             "modulus congruent to 1 mod 8, got " +
+                             std::to_string(p));
+
+  IntegerType e = 0, q = p - 1;
+  while (q % 2 == 0) {
+    q /= 2;
+    e += 1;
+  }
+
+  IntegerType z = 0;
+  do {
+    const IntegerType x = util::random_int64_t(2, p - 1);
+    z = pow_mod(x, q, p);
+  } while (pow_2_pow_mod(z, e - 1, p) == 1);
+
+  IntegerType y = z, r = e, x = pow_mod(num, (q - 1) / 2, p),
+              v = mul_mod(num, x, p), w = mul_mod(v, x, p);
+  while (w != 1) {
+    IntegerType pow = w;
+    IntegerType k = 0;
+    while (pow != 1) {
+      pow = mul_mod(pow, pow, p);
+      k += 1;
+    }
+    const IntegerType d = pow_2_pow_mod(y, r - k - 1, p);
+    y = mul_mod(d, d, p);
+    r = k;
+    v = mul_mod(d, v, p);
+    w = mul_mod(w, y, p);
+  }
+  return v;
+}
+
+template <class IntegerType>
+IntegerType sqrt_mod(const IntegerType num, const IntegerType p) {
+  if (p < 0 || !is_prime_slow(p))
+    throw std::runtime_error("sqrt_mod expects a positive prime modulus, got " +
+                             std::to_string(p));
+  if (num < 0 || num >= p)
+    throw std::runtime_error(
+        "sqrt_mod expects 0 <= num < p, got num = " + std::to_string(num) +
+        ", p = " + std::to_string(p));
+
   if (p == 2 || num == 0)
     return num;
   else if (p % 4 == 3)
     return pow_mod(num, (p + 1) / 4, p);
   else if (p % 8 == 5) {
-    const IntegerType two = 2;
-    const IntegerType twice_num = mul_mod(two, num, p);
-    // The source above mentions (p - 5) / 8 but these are equivalent since
-    // integer division rounds downwards
-    const IntegerType v = pow_mod(twice_num, p / 8, p);
-    const IntegerType num_v = mul_mod(num, v, p);
-    const IntegerType i = mul_mod(mul_mod(twice_num, v, p), v, p);
-    // i is guaranteed not to be 0, so i - 1 >= 0
-    return mul_mod(num_v, i - 1, p);
+    return sqrt_mod_8k_plus_5(num, p);
   } else {
-    IntegerType e = 0, q = p - 1;
-    while (q % 2 == 0) {
-      q /= 2;
-      e += 1;
-    }
-
-    IntegerType z = 0;
-    do {
-      const IntegerType x = util::random_int64_t(2, p - 1);
-      z = pow_mod(x, q, p);
-    } while (pow_2_pow_mod(z, e - 1, p) == 1);
-
-    IntegerType y = z, r = e, x = pow_mod(num, (q - 1) / 2, p),
-                v = mul_mod(num, x, p), w = mul_mod(v, x, p);
-    while (w != 1) {
-      IntegerType pow = w;
-      IntegerType k = 0;
-      while (pow != 1) {
-        pow = mul_mod(pow, pow, p);
-        k += 1;
-      }
-      const IntegerType d = pow_2_pow_mod(y, r - k - 1, p);
-      y = mul_mod(d, d, p);
-      r = k;
-      v = mul_mod(d, v, p);
-      w = mul_mod(w, y, p);
-    }
-    return v;
+    return sqrt_mod_8k_plus_1(num, p);
   }
 }
 

@@ -14,7 +14,7 @@ template <class IntegerType = int64_t>
 class PrimeField : AbstractField<IntegerType> {
 public:
   using value_t = IntegerType;
-  using element_t = FieldElement<PrimeField<IntegerType>>;
+  using element_t = FieldElement<PrimeField>;
 
   const value_t p;
 
