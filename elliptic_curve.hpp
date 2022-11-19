@@ -10,11 +10,10 @@ template <typename Field> struct EllipticCurve {
   struct Point {
     field_element_t x, y;
     bool affine;
-    Point(const Field *field)
-        : x(field->value(0)), y(field->value(1)), affine(false) {}
-    Point(const Field *field, const field_element_t x, const field_element_t y)
+    Point(const Field &field) : x(field(0)), y(field(1)), affine(false) {}
+    Point(const Field &field, const field_element_t x, const field_element_t y)
         : x(x), y(y), affine(true) {}
-    static Point infinity(const Field *field) { return Point(field); }
+    static Point infinity(const Field &field) { return Point(field); }
 
     constexpr inline bool operator==(const Point &other) const {
       return x == other.x && y == other.y && affine == other.affine;
@@ -28,14 +27,15 @@ template <typename Field> struct EllipticCurve {
 
   using point_t = Point;
 
-  const Field *field; // non-owning reference
+  const Field &field; // non-owning reference
   const field_element_t a, b;
 
-  EllipticCurve(const Field *field, const field_element_t a,
+  EllipticCurve(const Field &field, const field_element_t a,
                 const field_element_t b)
       : field(field), a(a), b(b) {}
-  EllipticCurve(const Field *field, const int a, const int b)
-      : field(field), a(field->value(a)), b(field->value(b)) {}
+  EllipticCurve(const Field &field, const int a, const int b)
+      : field(field), a(field_element_t(a, field)),
+        b(field_element_t(b, field)) {}
 
   constexpr inline field_element_t f(const field_element_t x) const {
     return x * x * x + a * x + b;
@@ -45,7 +45,7 @@ template <typename Field> struct EllipticCurve {
     return Point(field, x, y);
   }
   constexpr inline Point affine_point(const int x, const int y) const {
-    return affine_point(field->value(x), field->value(y));
+    return affine_point(field_element_t(x, field), field_element_t(y, field));
   }
 
   constexpr inline bool is_point_on_curve(const point_t &point) const {
@@ -57,6 +57,6 @@ template <typename Field> struct EllipticCurve {
   friend std::ostream &operator<<(std::ostream &os,
                                   const EllipticCurve &curve) {
     return os << "Elliptic curve defined by y^2 = x^3 + " << curve.a.value
-              << "*x + " << curve.b.value << " over " << *curve.field;
+              << "*x + " << curve.b.value << " over " << curve.field;
   }
 };

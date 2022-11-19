@@ -86,7 +86,10 @@ constexpr bool is_quadratic_residue(const IntegerType num,
     throw std::runtime_error(
         "is_quadratic_residue expects a prime modulus, got: " +
         std::to_string(p));
-  return p == 2 || pow_mod(num, (p - 1) / 2, p) == 1;
+  if (p == 2)
+    return true;
+  const IntegerType fermat_value = pow_mod(num, (p - 1) / 2, p);
+  return fermat_value == 0 || fermat_value == 1;
 }
 
 // Implementation from https://www.rieselprime.de/ziki/Modular_square_root

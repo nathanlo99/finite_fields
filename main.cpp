@@ -35,20 +35,30 @@ int main() {
   //   std::cout << std::endl;
   // }
 
-  // const auto E = EllipticCurve(&F, 2, 3);
-  // std::cout << E << std::endl;
+  const auto E = EllipticCurve(F, 2, 3);
+  std::cout << E << std::endl;
 
-  // int num_points = 0;
-  // for (int x = 0; x < F.p; ++x) {
-  //   for (int y = 0; y < F.p; ++y) {
-  //     const auto point = E.affine_point(x, y);
-  //     if (E.is_point_on_curve(point)) {
-  //       std::cout << point << std::endl;
-  //       num_points++;
-  //     }
-  //   }
-  // }
-  // std::cout << num_points + 1 << " points" << std::endl;
+  int num_points = 0;
+  for (long long x = 0; x < F.p; ++x) {
+    const auto x_element = F(x);
+    const auto fx = E.f(x_element);
+    if (!nt::is_quadratic_residue(fx.value, F.p))
+      continue;
+
+    const auto y_element = F(nt::sqrt_mod(fx.value, F.p));
+    const auto p1 = E.affine_point(x_element, y_element);
+    const auto p2 = E.affine_point(x_element, -y_element);
+    std::cout << p1 << std::endl;
+    num_points++;
+    if (p1 != p2) {
+      std::cout << p2 << std::endl;
+      num_points++;
+    }
+  }
+  std::cout << num_points + 1 << " points" << std::endl;
+  // 999705 points
+
+  return 0;
 
   for (long long p = 2; p < 1000000; ++p) {
     if (!NumberTheory::is_prime_slow(p))

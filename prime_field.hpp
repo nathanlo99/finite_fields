@@ -34,9 +34,10 @@ public:
     assert(0 <= num && num < p);
   }
 
-  constexpr inline element_t element(const value_t num) const {
-    return element_t(integer(num), this);
+  constexpr inline element_t operator()(const int64_t num) const {
+    return element_t(integer(num), *this);
   }
+
   constexpr inline value_t zero() const override { return 0; }
   constexpr inline value_t one() const override { return 1; }
 
@@ -46,7 +47,7 @@ public:
 
   constexpr inline value_t neg(const value_t a) const override {
     assert_in_bounds(a);
-    return p - a;
+    return a == 0 ? 0 : p - a;
   }
   constexpr inline value_t add(const value_t a,
                                const value_t b) const override {
