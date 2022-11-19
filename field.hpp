@@ -76,6 +76,20 @@ template <class Field> struct FieldElement {
     return field.eq(value, other.value);
   }
 
+  friend element_t operator*(const int a, const element_t &b) {
+    return b.field(a) * b;
+  }
+  friend element_t operator*(const element_t &a, const int b) {
+    return a * a.field(b);
+  }
+
+  friend bool operator==(const int a, const element_t &b) {
+    return b.field.eq(a, b.value);
+  }
+  friend bool operator==(const element_t &a, const int b) {
+    return a.field.eq(a.value, b);
+  }
+
   friend std::ostream &operator<<(std::ostream &os, const FieldElement &val) {
     return os << val.value;
   }

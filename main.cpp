@@ -10,16 +10,24 @@
 #include "timing.hpp"
 
 int main() {
-  PrimeField<> F = PrimeField<>(1000003);
+  PrimeField<> F = PrimeField<>(7);
   const auto E = EllipticCurve(F, 2, 3);
   std::cout << E << std::endl;
 
   const auto start_ms = get_time_ms();
-  const auto points = E.point_set();
-  std::cout << points.size() << " points" << std::endl; // 999705 points
+  const auto points = E.points();
+  for (const auto point : points) {
+    std::cout << point << std::endl;
+  }
+  std::cout << points.size() << " points" << std::endl;
   const auto end_ms = get_time_ms();
   std::cout << "Done in " << (end_ms - start_ms) / 1000.0 << " seconds"
             << std::endl;
+
+  const auto point = points[points.size() / 2];
+  std::cout << point << std::endl;
+  std::cout << point + point << std::endl;
+  std::cout << point + point + point << std::endl;
 
   // for (long long p = 2; p < 1000000; ++p) {
   //   if (!NumberTheory::is_prime_slow(p))

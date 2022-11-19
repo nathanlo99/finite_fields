@@ -2,6 +2,7 @@
 #include "field.hpp"
 #include "number_theory.hpp"
 
+#include <stdexcept>
 #include <utility>
 
 namespace nt = NumberTheory;
@@ -26,14 +27,14 @@ template <typename Field> struct EllipticCurve {
         return q;
       if (!q.affine)
         return p;
-      if (p.y + q.y == p.curve.field.zero())
+      if (p.y + q.y == 0)
         return infinity(p.curve);
       const field_element_t slope =
           (p == q) ? (3 * p.x * p.x + p.curve.a) / (2 * p.y)
                    : (q.y - p.y) / (q.x - p.x);
       const field_element_t rx = slope * slope - p.x - q.x;
       const field_element_t ry = slope * (rx - p.x) + p.y;
-      return Point(p.curve, rx, ry);
+      return Point(p.curve, rx, -ry);
     }
 
     constexpr inline bool operator==(const Point &other) const {
@@ -53,10 +54,16 @@ template <typename Field> struct EllipticCurve {
 
   EllipticCurve(const Field &field, const field_element_t a,
                 const field_element_t b)
-      : field(field), a(a), b(b) {}
+      : field(field), a(a), b(b) {
+    const field_element_t discriminant = 4 * a * a * a + 27 * b * b;
+    if (discriminant == 0)
+      throw std::runtime_error("y^2 = x^3 + " + std::to_string(a.value) +
+                               "x + " + std::to_string(b.value) +
+                               " defines a singular curve");
+    std::cout << "discriminant: " << discriminant << std::endl;
+  }
   EllipticCurve(const Field &field, const int a, const int b)
-      : field(field), a(field_element_t(a, field)),
-        b(field_element_t(b, field)) {}
+      : EllipticCurve(field, field(a), field(b)) {}
 
   constexpr inline field_element_t f(const field_element_t x) const {
     return x * x * x + a * x + b;
@@ -70,7 +77,7 @@ template <typename Field> struct EllipticCurve {
     return affine_point(field_element_t(x, field), field_element_t(y, field));
   }
 
-  inline std::vector<point_t> point_set() const {
+  inline std::vector<point_t> points() const {
     std::vector<point_t> result = {Point::infinity(*this)};
     for (long long x = 0; x < field.p; ++x) {
       const auto x_element = field(x);
