@@ -19,6 +19,8 @@ public:
   const value_t p;
 
   constexpr PrimeField(const value_t p) : p(p) {
+    if (p < 2)
+      throw std::runtime_error("PrimeField modulus must be at least 2");
     if (std::sqrt(std::numeric_limits<IntegerType>::max()) < p)
       throw std::runtime_error(
           "PrimeField integer type was not large enough to support modulus " +
@@ -28,50 +30,62 @@ public:
                                std::to_string(p));
   }
 
-  constexpr inline element_t value(const value_t num) const {
-    return element_t(val(num), this);
+  constexpr inline void assert_in_bounds(const value_t num) const {
+    assert(0 <= num && num < p);
+  }
+
+  constexpr inline element_t element(const value_t num) const {
+    return element_t(integer(num), this);
   }
   constexpr inline value_t zero() const override { return 0; }
   constexpr inline value_t one() const override { return 1; }
-  constexpr inline value_t integer(const int value) const override {
-    return val(value);
+
+  constexpr inline value_t integer(const int64_t value) const override {
+    return ((value % p) + p) % p;
   }
 
   constexpr inline value_t neg(const value_t a) const override {
-    return val(p - a);
+    assert_in_bounds(a);
+    return p - a;
   }
   constexpr inline value_t add(const value_t a,
                                const value_t b) const override {
-    return val(a + b);
+    assert_in_bounds(a);
+    assert_in_bounds(b);
+    // The intermediate value here is a + b <= 2p < p * p
+    return (a + b) % p;
   }
   constexpr inline value_t sub(const value_t a,
                                const value_t b) const override {
-    return val(a - b);
+    assert_in_bounds(a);
+    assert_in_bounds(b);
+    // The intermediate value here is a + p <= 2p < p * p
+    return (a + p - b) % p;
   }
 
   constexpr inline value_t inv(const value_t a) const override {
+    assert_in_bounds(a);
     if (a == 0)
       throw std::runtime_error("Division by zero");
     return nt::inv_mod<value_t>(a, p);
   }
   constexpr inline value_t mul(const value_t a,
                                const value_t b) const override {
-    return val(a * b);
+    assert_in_bounds(a);
+    assert_in_bounds(b);
+    return nt::mul_mod<value_t>(a, b, p);
   }
   constexpr inline value_t div(const value_t a,
                                const value_t b) const override {
-    if (b == 0)
-      throw std::runtime_error("Division by zero");
-    return val(a * inv(b));
+    assert_in_bounds(a);
+    assert_in_bounds(b);
+    return mul(a, inv(b));
   }
 
   constexpr inline bool eq(const value_t a, const value_t b) const override {
+    assert_in_bounds(a);
+    assert_in_bounds(b);
     return a == b;
-  }
-
-private:
-  constexpr inline value_t val(const value_t value) const {
-    return static_cast<value_t>(((value % p) + p) % p);
   }
 
 public:

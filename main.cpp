@@ -8,6 +8,8 @@
 #include "number_theory.hpp"
 #include "prime_field.hpp"
 
+namespace nt = NumberTheory;
+
 int main() {
   PrimeField<> F = PrimeField<>(1000003);
   // std::cout << F << std::endl;
@@ -33,22 +35,34 @@ int main() {
   //   std::cout << std::endl;
   // }
 
-  const auto E = EllipticCurve(&F, 2, 3);
-  std::cout << E << std::endl;
+  // const auto E = EllipticCurve(&F, 2, 3);
+  // std::cout << E << std::endl;
 
-  int num_points = 0;
-  for (int x = 0; x < F.p; ++x) {
-    for (int y = 0; y < F.p; ++y) {
-      const auto point = E.affine_point(x, y);
-      if (E.is_point_on_curve(point)) {
-        std::cout << point << std::endl;
-        num_points++;
+  // int num_points = 0;
+  // for (int x = 0; x < F.p; ++x) {
+  //   for (int y = 0; y < F.p; ++y) {
+  //     const auto point = E.affine_point(x, y);
+  //     if (E.is_point_on_curve(point)) {
+  //       std::cout << point << std::endl;
+  //       num_points++;
+  //     }
+  //   }
+  // }
+  // std::cout << num_points + 1 << " points" << std::endl;
+
+  for (long long p = 2; p < 1000000; ++p) {
+    if (!NumberTheory::is_prime_slow(p))
+      continue;
+    for (long long i = 0; i < p; ++i) {
+      if (!nt::is_quadratic_residue(i, p))
+        continue;
+      const long long sqrt = nt::sqrt_mod(i, p);
+      const long long prod = nt::mul_mod(sqrt, sqrt, p);
+      if (prod != i) {
+        std::cout << "sqrt(" << i << ") failed" << std::endl;
+        exit(1);
       }
     }
+    std::cout << "Done testing " << p << std::endl;
   }
-  std::cout << num_points + 1 << " points" << std::endl;
-
-  const auto a = F.value(23875);
-  const auto b = F.value(34785);
-  std::cout << a * b << std::endl;
 }

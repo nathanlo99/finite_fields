@@ -12,7 +12,7 @@ public:
 
   // The default is a naive generic double-and-add, but subclasses can override
   // this with custom behaviour, see PrimeField::integer()
-  virtual value_t integer(const int value) const {
+  virtual value_t integer(const int64_t value) const {
     value_t result = zero(), pow = one();
     for (int power_of_two = 1; power_of_two < value; power_of_two <<= 1) {
       if (value & power_of_two)
