@@ -7,6 +7,8 @@ template <class Value> class AbstractField {
 public:
   using value_t = Value;
 
+  virtual value_t characteristic() const = 0;
+
   virtual value_t zero() const = 0;
   virtual value_t one() const = 0;
 

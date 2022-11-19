@@ -38,6 +38,8 @@ public:
     return element_t(integer(num), *this);
   }
 
+  constexpr inline value_t characteristic() const override { return p; }
+
   constexpr inline value_t zero() const override { return 0; }
   constexpr inline value_t one() const override { return 1; }
 

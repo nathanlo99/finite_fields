@@ -33,8 +33,8 @@ template <typename Field> struct EllipticCurve {
           (p == q) ? (3 * p.x * p.x + p.curve.a) / (2 * p.y)
                    : (q.y - p.y) / (q.x - p.x);
       const field_element_t rx = slope * slope - p.x - q.x;
-      const field_element_t ry = slope * (rx - p.x) + p.y;
-      return Point(p.curve, rx, -ry);
+      const field_element_t ry = slope * (p.x - rx) - p.y;
+      return Point(p.curve, rx, ry);
     }
 
     constexpr inline bool operator==(const Point &other) const {
@@ -55,6 +55,9 @@ template <typename Field> struct EllipticCurve {
   EllipticCurve(const Field &field, const field_element_t a,
                 const field_element_t b)
       : field(field), a(a), b(b) {
+    if (field.characteristic() == 2 || field.characteristic() == 3)
+      throw std::runtime_error("EllipticCurve does not currently support "
+                               "fields of characteristic 2 or 3");
     const field_element_t discriminant = 4 * a * a * a + 27 * b * b;
     if (discriminant == 0)
       throw std::runtime_error("y^2 = x^3 + " + std::to_string(a.value) +
