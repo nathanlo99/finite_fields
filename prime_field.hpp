@@ -68,7 +68,7 @@ public:
     assert_in_bounds(a);
     if (a == 0)
       throw std::runtime_error("Division by zero");
-    return nt::inv_mod_slow<value_t>(a, p);
+    return nt::inv_mod<value_t>(a, p);
   }
   constexpr inline value_t mul(const value_t a,
                                const value_t b) const override {

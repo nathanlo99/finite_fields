@@ -11,3 +11,4 @@ set(CMAKE_EXE_LINKER_FLAGS "-Ofast -flto -ffast-math")
 include_directories(elliptic_curves PUBLIC . tests)
 
 add_executable(elliptic_curves main.cpp)
+# set_target_properties(elliptic_curves PROPERTIES COMPILE_FLAGS "-DNDEBUG")

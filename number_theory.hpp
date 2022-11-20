@@ -72,24 +72,56 @@ constexpr IntegerType pow_2_pow_mod(const IntegerType base,
   return result;
 }
 
+// Uses the extended Euclidean algorithm to find integer solutions to
+// num * inv + k * p = 1
 template <class IntegerType>
-constexpr IntegerType inv_mod_slow(const IntegerType num,
-                                   const IntegerType mod) {
-  assert(0 < num && num < mod);
-  return pow_mod(num, mod - 2, mod);
+constexpr IntegerType inv_mod(const IntegerType num, const IntegerType p) {
+  assert(0 < num && num < p);
+  IntegerType r0 = p, r1 = num, s0 = 1, s1 = 0, t0 = 0, t1 = 1;
+  while (r1 != 0) {
+    const IntegerType q = r0 / r1, r2 = r0 % r1;
+    std::tie(r0, s0, t0, r1, s1, t1) =
+        std::make_tuple(r1, s1, t1, r2, s0 - s1 * q, t0 - t1 * q);
+  }
+  return t0 >= 0 ? t0 : t0 + p;
+}
+
+template <class IntegerType>
+constexpr IntegerType jacobi_symbol(IntegerType a, IntegerType n) {
+  if (n <= 0 || n % 2 == 0)
+    throw std::runtime_error(
+        "jacobi_symbol expected n to be positive and odd, but got " +
+        std::to_string(n));
+  IntegerType result = 1;
+  while (true) {
+    a %= n;
+    if (a == 0)
+      return (n == 1) ? result : 0;
+    IntegerType h = 0;
+    while (a % 2 == 0) {
+      a /= 2;
+      h++;
+    }
+    const IntegerType remainder = n % 8;
+    if (h % 2 != 0 && remainder != 1 && remainder != 7)
+      result = -result;
+    if (a % 4 != 1 && remainder != 1 && remainder != 5)
+      result = -result;
+    std::swap(a, n);
+  }
 }
 
 template <class IntegerType>
 constexpr bool is_quadratic_residue(const IntegerType num,
                                     const IntegerType p) {
+  assert(0 <= num && num < p);
   if (!is_prime_slow(p))
     throw std::runtime_error(
         "is_quadratic_residue expects a prime modulus, got: " +
         std::to_string(p));
-  if (p == 2)
+  if (p == 2 || num == 0)
     return true;
-  const IntegerType fermat_value = pow_mod(num, (p - 1) / 2, p);
-  return fermat_value == 0 || fermat_value == 1;
+  return jacobi_symbol(num, p) == 1;
 }
 
 // Implementations of square roots mod primes taken from
