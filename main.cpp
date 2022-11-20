@@ -10,15 +10,12 @@
 #include "timing.hpp"
 
 int main() {
-  PrimeField<> F = PrimeField<>(7);
+  PrimeField F = PrimeField(1000003LL); // (3'000'000'019LL);
   const auto E = EllipticCurve(F, 2, 3);
   std::cout << E << std::endl;
 
   const auto start_ms = get_time_ms();
   const auto points = E.points();
-  for (const auto point : points) {
-    std::cout << point << std::endl;
-  }
   std::cout << points.size() << " points" << std::endl;
   const auto end_ms = get_time_ms();
   std::cout << "Done in " << (end_ms - start_ms) / 1000.0 << " seconds"

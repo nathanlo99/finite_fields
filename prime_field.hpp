@@ -55,22 +55,20 @@ public:
                                const value_t b) const override {
     assert_in_bounds(a);
     assert_in_bounds(b);
-    // The intermediate value here is a + b <= 2p < p * p
-    return (a + b) % p;
+    return nt::add_mod<value_t>(a, b, p);
   }
   constexpr inline value_t sub(const value_t a,
                                const value_t b) const override {
     assert_in_bounds(a);
     assert_in_bounds(b);
-    // The intermediate value here is a + p <= 2p < p * p
-    return (a + p - b) % p;
+    return nt::sub_mod<value_t>(a, b, p);
   }
 
   constexpr inline value_t inv(const value_t a) const override {
     assert_in_bounds(a);
     if (a == 0)
       throw std::runtime_error("Division by zero");
-    return nt::inv_mod<value_t>(a, p);
+    return nt::inv_mod_slow<value_t>(a, p);
   }
   constexpr inline value_t mul(const value_t a,
                                const value_t b) const override {

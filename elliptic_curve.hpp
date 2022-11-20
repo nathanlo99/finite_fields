@@ -63,7 +63,6 @@ template <typename Field> struct EllipticCurve {
       throw std::runtime_error("y^2 = x^3 + " + std::to_string(a.value) +
                                "x + " + std::to_string(b.value) +
                                " defines a singular curve");
-    std::cout << "discriminant: " << discriminant << std::endl;
   }
   EllipticCurve(const Field &field, const int a, const int b)
       : EllipticCurve(field, field(a), field(b)) {}
@@ -82,7 +81,7 @@ template <typename Field> struct EllipticCurve {
 
   inline std::vector<point_t> points() const {
     std::vector<point_t> result = {Point::infinity(*this)};
-    for (long long x = 0; x < field.p; ++x) {
+    for (value_t x = 0; x < field.p; ++x) {
       const auto x_element = field(x);
       const auto fx = f(x_element);
       if (!nt::is_quadratic_residue(fx.value, field.p))

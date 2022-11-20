@@ -9,11 +9,11 @@
 #include <unordered_map>
 
 namespace NumberTheory {
-constexpr bool is_prime_slow(int p) {
+template <class IntegerType> constexpr bool is_prime_slow(const IntegerType p) {
   assert(p >= 0);
   if (p < 2)
     return false;
-  for (int i = 2; i * i <= p; ++i) {
+  for (IntegerType i = 2; i * i <= p; ++i) {
     if (p % i == 0)
       return false;
   }
@@ -33,7 +33,7 @@ constexpr IntegerType sub_mod(const IntegerType a, const IntegerType b,
                               const IntegerType mod) {
   assert(0 <= a && a < mod);
   assert(0 <= b && b < mod);
-  return (((a - b) % mod) + mod) % mod;
+  return (a + mod - b) % mod;
 }
 
 template <class IntegerType>
@@ -45,20 +45,18 @@ constexpr IntegerType mul_mod(const IntegerType a, const IntegerType b,
 }
 
 template <class IntegerType>
-constexpr IntegerType pow_mod(const IntegerType base,
-                              const IntegerType exponent,
+constexpr IntegerType pow_mod(IntegerType base, IntegerType exponent,
                               const IntegerType mod) {
   assert(0 <= base && base < mod);
   if (exponent < 0)
     throw std::runtime_error("pow_mod() expects a non-negative exponent, got " +
                              std::to_string(exponent));
   IntegerType result = 1;
-  IntegerType pow = base;
-  for (int power_of_two = 1; power_of_two <= exponent; power_of_two <<= 1) {
-    if (exponent & power_of_two) {
-      result = mul_mod(result, pow, mod);
-    }
-    pow = mul_mod(pow, pow, mod);
+  while (exponent != 0) {
+    if (exponent % 2 != 0)
+      result = mul_mod(result, base, mod);
+    base = mul_mod(base, base, mod);
+    exponent /= 2;
   }
   return result;
 }
@@ -75,7 +73,8 @@ constexpr IntegerType pow_2_pow_mod(const IntegerType base,
 }
 
 template <class IntegerType>
-constexpr IntegerType inv_mod(const IntegerType num, const IntegerType mod) {
+constexpr IntegerType inv_mod_slow(const IntegerType num,
+                                   const IntegerType mod) {
   assert(0 < num && num < mod);
   return pow_mod(num, mod - 2, mod);
 }
