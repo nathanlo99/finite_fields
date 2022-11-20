@@ -9,6 +9,19 @@
 #include <unordered_map>
 
 namespace NumberTheory {
+
+// Returns a pair (s, k) such that num = 2^s * k, s >= 0, and k is odd
+template <class IntegerType>
+constexpr std::pair<IntegerType, IntegerType>
+odd_factorization(IntegerType num) {
+  IntegerType s = 0;
+  while (num % 2 == 0) {
+    num /= 2;
+    s++;
+  }
+  return std::make_pair(s, num);
+}
+
 template <class IntegerType> constexpr bool is_prime_slow(const IntegerType p) {
   assert(p >= 0);
   if (p < 2)
@@ -97,17 +110,14 @@ constexpr IntegerType jacobi_symbol(IntegerType a, IntegerType n) {
     a %= n;
     if (a == 0)
       return (n == 1) ? result : 0;
-    IntegerType h = 0;
-    while (a % 2 == 0) {
-      a /= 2;
-      h++;
-    }
+    const auto &[h, a1] = odd_factorization(a);
     const IntegerType remainder = n % 8;
     if (h % 2 != 0 && remainder != 1 && remainder != 7)
       result = -result;
-    if (a % 4 != 1 && remainder != 1 && remainder != 5)
+    if (a1 % 4 != 1 && remainder != 1 && remainder != 5)
       result = -result;
-    std::swap(a, n);
+    a = n;
+    n = a1;
   }
 }
 
@@ -151,12 +161,7 @@ IntegerType sqrt_mod_8k_plus_1(const IntegerType num, const IntegerType p) {
                              "modulus congruent to 1 mod 8, got " +
                              std::to_string(p));
 
-  IntegerType e = 0, q = p - 1;
-  while (q % 2 == 0) {
-    q /= 2;
-    e += 1;
-  }
-
+  const auto &[e, q] = odd_factorization(p - 1);
   IntegerType z = 0;
   do {
     const IntegerType x = util::random_int64_t(2, p - 1);
