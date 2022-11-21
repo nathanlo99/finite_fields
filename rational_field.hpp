@@ -7,12 +7,15 @@
 #include <cstdint>
 #include <stdexcept>
 
-template <class Fraction = Fraction<>>
-class RationalField : AbstractField<Fraction> {
+template <class IntegerType = int64_t>
+class RationalField : AbstractField<Fraction<IntegerType>> {
 public:
+  using integer_t = IntegerType;
+  using fraction_t = Fraction<IntegerType>;
+
   // NOTE: These are the two types which have to be exposed as a subclass of
   // AbstractField
-  using value_t = Fraction;
+  using value_t = fraction_t;
   using element_t = FieldElement<RationalField>;
 
 public:
@@ -21,8 +24,8 @@ public:
   }
   constexpr inline int64_t characteristic() const override { return 0; }
 
-  constexpr inline value_t zero() const override { return Fraction(0, 1); }
-  constexpr inline value_t one() const override { return Fraction(1, 1); }
+  constexpr inline value_t zero() const override { return fraction_t(0, 1); }
+  constexpr inline value_t one() const override { return fraction_t(1, 1); }
 
   constexpr inline value_t neg(const value_t a) const override { return -a; }
   constexpr inline value_t add(const value_t a,
@@ -47,6 +50,8 @@ public:
   constexpr inline bool eq(const value_t a, const value_t b) const override {
     return a == b;
   }
+
+  bool operator==(const RationalField &other) const { return true; }
 
   friend std::ostream &operator<<(std::ostream &os,
                                   const RationalField &field) {
