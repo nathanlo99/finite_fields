@@ -3,6 +3,7 @@
 
 #include "random.hpp"
 
+#include <array>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -191,6 +192,27 @@ template <class IntegerType>
 constexpr inline bool is_prime(const IntegerType n) {
   assert(n >= 0);
   return is_prime_miller_rabin(n);
+}
+
+template <class IntegerType>
+constexpr inline IntegerType next_prime(IntegerType n) {
+  assert(n >= 0);
+  // The numbers coprime to 30 are 1 7 11 13 17 19 23 29
+  constexpr std::array<IntegerType, 8> small_primes = {2, 2, 3, 5, 5, 7, 7, 11};
+  constexpr std::array<IntegerType, 30> offset_table = {
+      1, 6, 5, 4, 3, 2, //  0 -  5
+      1, 4, 3, 2, 1, 2, //  6 - 11
+      1, 4, 3, 2, 1, 2, // 12 - 17
+      1, 4, 3, 2, 1, 6, // 18 - 23
+      5, 4, 3, 2, 1, 2, // 24 - 29
+  };
+  if (n < 8) [[unlikely]]
+    return small_primes[n];
+  while (true) {
+    n += offset_table[n % 30];
+    if (is_prime(n))
+      return n;
+  }
 }
 
 template <class IntegerType>

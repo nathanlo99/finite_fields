@@ -49,10 +49,9 @@ int main() {
   });
 
   timeit("prime_count", []() {
-    long long num_primes = 0, max_num = 1'000'000;
-    for (long long p = 0; p < max_num; ++p) {
-      if (NumberTheory::is_prime_miller_rabin(p))
-        num_primes++;
+    long long num_primes = 0, max_num = 1'000'000'000;
+    for (long long p = 2; p < max_num; p = nt::next_prime(p)) {
+      num_primes++;
     }
     std::cout << "There are " << num_primes << " primes under " << max_num
               << std::endl;
