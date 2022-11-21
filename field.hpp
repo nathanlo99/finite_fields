@@ -8,7 +8,7 @@ template <class Value> class AbstractField {
 public:
   using value_t = Value;
 
-  virtual value_t characteristic() const = 0;
+  virtual int64_t characteristic() const = 0;
 
   virtual value_t zero() const = 0;
   virtual value_t one() const = 0;
@@ -61,8 +61,8 @@ template <class Field> struct FieldElement {
       : field(other.field), value(other.value) {}
   FieldElement &operator=(const FieldElement &other) {
     if (field != other.field)
-      throw std::runtime_error("Field element cannot be assigned to field "
-                               "element with different base field");
+      throw math_error("Field element cannot be assigned to field "
+                       "element with different base field");
     value = other.value;
     return *this;
   }

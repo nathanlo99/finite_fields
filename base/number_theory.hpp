@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "error.hpp"
 #include "random.hpp"
 
 #include <array>
@@ -10,6 +11,13 @@
 #include <unordered_map>
 
 namespace NumberTheory {
+
+template <class IntegerType>
+constexpr inline IntegerType gcd(IntegerType a, IntegerType b) {
+  while (b != 0)
+    std::tie(a, b) = std::make_pair(b, a % b);
+  return a;
+}
 
 // Returns a pair (s, k) such that num = 2^s * k, s >= 0, and k is odd
 template <class IntegerType>
@@ -52,8 +60,8 @@ constexpr IntegerType pow_mod(IntegerType base, IntegerType exponent,
                               const IntegerType mod) {
   assert(0 <= base && base < mod);
   if (exponent < 0)
-    throw std::runtime_error("pow_mod() expects a non-negative exponent, got " +
-                             std::to_string(exponent));
+    throw math_error() << "pow_mod() expects a non-negative exponent, got "
+                       << exponent;
   IntegerType result = 1;
   while (exponent != 0) {
     if (exponent % 2 != 0)
@@ -92,9 +100,8 @@ constexpr IntegerType inv_mod(const IntegerType num, const IntegerType p) {
 template <class IntegerType>
 constexpr IntegerType jacobi_symbol(IntegerType a, IntegerType n) {
   if (n <= 0 || n % 2 == 0)
-    throw std::runtime_error(
-        "jacobi_symbol expected n to be positive and odd, but got " +
-        std::to_string(n));
+    throw math_error()
+        << "jacobi_symbol expected n to be positive and odd, but got " << n;
   IntegerType result = 1;
   while (true) {
     a %= n;
@@ -197,9 +204,8 @@ constexpr inline bool is_prime(const IntegerType n) {
 template <class IntegerType>
 constexpr inline IntegerType next_prime(IntegerType n) {
   if (n < 0)
-    throw std::runtime_error(
-        "next_prime() expected a non-negative integer, got " +
-        std::to_string(n));
+    throw math_error() << "next_prime() expected a non-negative integer, got "
+                       << n;
 
   // The numbers coprime to 30 are 1 7 11 13 17 19 23 29
   constexpr std::array<IntegerType, 8> small_primes = {2, 2, 3, 5, 5, 7, 7, 11};
@@ -224,9 +230,8 @@ constexpr bool is_quadratic_residue(const IntegerType num,
                                     const IntegerType p) {
   assert(0 <= num && num < p);
   if (!is_prime(p))
-    throw std::runtime_error(
-        "is_quadratic_residue expects a prime modulus, got: " +
-        std::to_string(p));
+    throw math_error() << "is_quadratic_residue expects a prime modulus, got: "
+                       << p;
   if (p == 2 || num == 0)
     return true;
   return jacobi_symbol(num, p) == 1;
@@ -238,9 +243,9 @@ template <class IntegerType>
 constexpr IntegerType sqrt_mod_8k_plus_5(const IntegerType num,
                                          const IntegerType p) {
   if (p < 0 || p % 8 != 5 || !is_prime(p))
-    throw std::runtime_error("sqrt_mod_8k_plus_5 expects a positive prime "
-                             "modulus congruent to 5 mod 8, got " +
-                             std::to_string(p));
+    throw math_error() << "sqrt_mod_8k_plus_5 expects a positive prime "
+                          "modulus congruent to 5 mod 8, got "
+                       << p;
   const IntegerType two = 2;
   const IntegerType twice_num = mul_mod(two, num, p);
   // The source above mentions (p - 5) / 8 but these are equivalent since
@@ -255,9 +260,9 @@ constexpr IntegerType sqrt_mod_8k_plus_5(const IntegerType num,
 template <class IntegerType>
 IntegerType sqrt_mod_8k_plus_1(const IntegerType num, const IntegerType p) {
   if (p < 0 || p % 8 != 1 || !is_prime(p))
-    throw std::runtime_error("sqrt_mod_8k_plus_1 expects a positive prime "
-                             "modulus congruent to 1 mod 8, got " +
-                             std::to_string(p));
+    throw math_error() << "sqrt_mod_8k_plus_1 expects a positive prime modulus "
+                          "congruent to 1 mod 8, got "
+                       << p;
 
   const auto &[e, q] = odd_factorization(p - 1);
   IntegerType z = 0;
@@ -287,12 +292,11 @@ IntegerType sqrt_mod_8k_plus_1(const IntegerType num, const IntegerType p) {
 template <class IntegerType>
 IntegerType sqrt_mod(const IntegerType num, const IntegerType p) {
   if (p < 0 || !is_prime(p))
-    throw std::runtime_error("sqrt_mod expects a positive prime modulus, got " +
-                             std::to_string(p));
+    throw math_error() << "sqrt_mod expects a positive prime modulus, got "
+                       << p;
   if (num < 0 || num >= p)
-    throw std::runtime_error(
-        "sqrt_mod expects 0 <= num < p, got num = " + std::to_string(num) +
-        ", p = " + std::to_string(p));
+    throw math_error() << "sqrt_mod expects 0 <= num < p, got num = " << num
+                       << ", p = " << p;
 
   if (p == 2 || num == 0)
     return num;

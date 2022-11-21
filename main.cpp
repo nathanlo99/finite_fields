@@ -5,11 +5,17 @@
 #include <stdexcept>
 
 #include "elliptic_curve.hpp"
+#include "fraction.hpp"
 #include "number_theory.hpp"
 #include "prime_field.hpp"
+#include "rational_field.hpp"
 #include "timing.hpp"
 
 int main() {
+  RationalField<> Q;
+  const auto E1 = EllipticCurve(Q, 2, 3);
+  std::cout << E1 << std::endl;
+
   PrimeField F = PrimeField(1000003LL);
   const auto E = EllipticCurve(F, 2, 3);
   std::cout << E << std::endl;

@@ -1,4 +1,5 @@
 
+#include "error.hpp"
 #include "field.hpp"
 #include "number_theory.hpp"
 
@@ -86,13 +87,12 @@ template <typename Field> struct EllipticCurve {
                 const field_element_t b)
       : field(field), a(a), b(b) {
     if (field.characteristic() == 2 || field.characteristic() == 3)
-      throw std::runtime_error("EllipticCurve does not currently support "
-                               "fields of characteristic 2 or 3");
+      throw math_error("EllipticCurve does not currently support "
+                       "fields of characteristic 2 or 3");
     const field_element_t discriminant = 4 * a * a * a + 27 * b * b;
     if (discriminant == 0)
-      throw std::runtime_error("y^2 = x^3 + " + std::to_string(a.value) +
-                               "x + " + std::to_string(b.value) +
-                               " defines a singular curve");
+      throw math_error() << "y^2 = x^3 + " << a.value << "x + " << b.value
+                         << " defines a singular curve";
   }
   EllipticCurve(const Field &field, const int a, const int b)
       : EllipticCurve(field, field(a), field(b)) {}

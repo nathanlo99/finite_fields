@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "error.hpp"
 #include "field.hpp"
 #include "number_theory.hpp"
 
@@ -20,14 +21,13 @@ public:
 
   constexpr PrimeField(const value_t p) : p(p) {
     if (p < 2)
-      throw std::runtime_error("PrimeField modulus must be at least 2");
+      throw math_error("PrimeField modulus must be at least 2");
     if (std::sqrt(std::numeric_limits<IntegerType>::max()) < p)
-      throw std::runtime_error(
-          "PrimeField integer type was not large enough to support modulus " +
-          std::to_string(p));
+      throw math_error()
+          << "PrimeField integer type was not large enough to support modulus "
+          << p;
     if (!nt::is_prime(p))
-      throw std::runtime_error("Modulus for PrimeField must be prime: " +
-                               std::to_string(p));
+      throw math_error() << "Modulus for PrimeField must be prime: " << p;
   }
 
   constexpr inline void assert_in_bounds(const value_t num) const {
@@ -38,7 +38,7 @@ public:
     return element_t(integer(num), *this);
   }
 
-  constexpr inline value_t characteristic() const override { return p; }
+  constexpr inline int64_t characteristic() const override { return p; }
 
   constexpr inline value_t zero() const override { return 0; }
   constexpr inline value_t one() const override { return 1; }
@@ -67,7 +67,7 @@ public:
   constexpr inline value_t inv(const value_t a) const override {
     assert_in_bounds(a);
     if (a == 0)
-      throw std::runtime_error("Division by zero");
+      throw math_error("Division by zero");
     return nt::inv_mod<value_t>(a, p);
   }
   constexpr inline value_t mul(const value_t a,
