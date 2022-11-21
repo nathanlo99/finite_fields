@@ -22,17 +22,6 @@ odd_factorization(IntegerType num) {
   return std::make_pair(s, num);
 }
 
-template <class IntegerType> constexpr bool is_prime_slow(const IntegerType p) {
-  assert(p >= 0);
-  if (p < 2)
-    return false;
-  for (IntegerType i = 2; i * i <= p; ++i) {
-    if (p % i == 0)
-      return false;
-  }
-  return true;
-}
-
 template <class IntegerType>
 constexpr IntegerType add_mod(const IntegerType a, const IntegerType b,
                               const IntegerType mod) {
@@ -121,11 +110,94 @@ constexpr IntegerType jacobi_symbol(IntegerType a, IntegerType n) {
   }
 }
 
+// Given n, s, d, a with n - 1 = 2^s * d, is a a Miller-Rabin witness for the
+// composite-ness of n?
+template <class IntegerType>
+constexpr bool is_miller_rabin_witness(const IntegerType n, IntegerType s,
+                                       const IntegerType d,
+                                       const IntegerType a) {
+  assert(odd_factorization(n - 1) == std::make_pair(s, d));
+  IntegerType x = pow_mod(a, d, n), y = 0;
+  while (s) {
+    y = mul_mod(x, x, n);
+    if (y == 1 && x != 1 && x != n - 1)
+      return false;
+    x = y;
+    --s;
+  }
+  return y == 1;
+}
+
+template <class IntegerType>
+constexpr bool is_likely_prime_miller_rabin(const IntegerType n,
+                                            const IntegerType s,
+                                            const IntegerType d,
+                                            const IntegerType num_iterations) {
+  for (IntegerType iter = 0; iter < num_iterations; ++iter) {
+    const IntegerType a = util::random_int64_t(2, n - 1);
+    if (!is_miller_rabin_witness(n, s, d, a))
+      return false;
+  }
+  return true;
+}
+
+template <class IntegerType>
+constexpr bool is_prime_miller_rabin(const IntegerType n) {
+  if (n == 2 || n == 3)
+    return true;
+  if (n < 2 || n % 2 == 0 || n % 3 == 0)
+    return false;
+  const auto &[s, d] = odd_factorization(n - 1);
+  if (n < 1373653LL)
+    return is_miller_rabin_witness<IntegerType>(n, s, d, 2) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 3);
+  if (n < 9080191LL)
+    return is_miller_rabin_witness<IntegerType>(n, s, d, 31) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 73);
+  if (n < 4759123141LL)
+    return is_miller_rabin_witness<IntegerType>(n, s, d, 2) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 7) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 61);
+  if (n < 1122004669633LL)
+    return is_miller_rabin_witness<IntegerType>(n, s, d, 2) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 13) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 23) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 1662803);
+  if (n < 2152302898747LL)
+    return is_miller_rabin_witness<IntegerType>(n, s, d, 2) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 3) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 5) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 7) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 11);
+  if (n < 3474749660383LL)
+    return is_miller_rabin_witness<IntegerType>(n, s, d, 2) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 3) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 5) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 7) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 11) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 13);
+  if (n < 341550071728321LL)
+    return is_miller_rabin_witness<IntegerType>(n, s, d, 2) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 3) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 5) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 7) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 11) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 13) &&
+           is_miller_rabin_witness<IntegerType>(n, s, d, 17);
+  return is_likely_prime_miller_rabin<IntegerType>(n, s, d, 100);
+}
+
+template <class IntegerType>
+constexpr inline bool is_prime(const IntegerType n) {
+  assert(n >= 0);
+  return is_prime_miller_rabin(n);
+}
+
 template <class IntegerType>
 constexpr bool is_quadratic_residue(const IntegerType num,
                                     const IntegerType p) {
   assert(0 <= num && num < p);
-  if (!is_prime_slow(p))
+  if (!is_prime(p))
     throw std::runtime_error(
         "is_quadratic_residue expects a prime modulus, got: " +
         std::to_string(p));
@@ -139,7 +211,7 @@ constexpr bool is_quadratic_residue(const IntegerType num,
 template <class IntegerType>
 constexpr IntegerType sqrt_mod_8k_plus_5(const IntegerType num,
                                          const IntegerType p) {
-  if (p < 0 || p % 8 != 5 || !is_prime_slow(p))
+  if (p < 0 || p % 8 != 5 || !is_prime(p))
     throw std::runtime_error("sqrt_mod_8k_plus_5 expects a positive prime "
                              "modulus congruent to 5 mod 8, got " +
                              std::to_string(p));
@@ -156,7 +228,7 @@ constexpr IntegerType sqrt_mod_8k_plus_5(const IntegerType num,
 
 template <class IntegerType>
 IntegerType sqrt_mod_8k_plus_1(const IntegerType num, const IntegerType p) {
-  if (p < 0 || p % 8 != 1 || !is_prime_slow(p))
+  if (p < 0 || p % 8 != 1 || !is_prime(p))
     throw std::runtime_error("sqrt_mod_8k_plus_1 expects a positive prime "
                              "modulus congruent to 1 mod 8, got " +
                              std::to_string(p));
@@ -188,7 +260,7 @@ IntegerType sqrt_mod_8k_plus_1(const IntegerType num, const IntegerType p) {
 
 template <class IntegerType>
 IntegerType sqrt_mod(const IntegerType num, const IntegerType p) {
-  if (p < 0 || !is_prime_slow(p))
+  if (p < 0 || !is_prime(p))
     throw std::runtime_error("sqrt_mod expects a positive prime modulus, got " +
                              std::to_string(p));
   if (num < 0 || num >= p)

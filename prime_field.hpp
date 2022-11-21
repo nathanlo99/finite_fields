@@ -25,7 +25,7 @@ public:
       throw std::runtime_error(
           "PrimeField integer type was not large enough to support modulus " +
           std::to_string(p));
-    if (!nt::is_prime_slow(p))
+    if (!nt::is_prime(p))
       throw std::runtime_error("Modulus for PrimeField must be prime: " +
                                std::to_string(p));
   }
