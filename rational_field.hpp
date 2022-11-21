@@ -55,6 +55,6 @@ public:
 
   friend std::ostream &operator<<(std::ostream &os,
                                   const RationalField &field) {
-    return os << "Rational field";
+    return os << "Rational Field";
   }
 };
