@@ -19,9 +19,17 @@ int main() {
     std::cout << points.size() << " points" << std::endl;
 
     const auto point = points[points.size() / 2];
-    std::cout << point << std::endl;
-    std::cout << point + point << std::endl;
-    std::cout << point + point + point << std::endl;
+    std::cout << "point = " << point << std::endl;
+    auto sum = E.infinity();
+    for (int i = 0; i < 1'000'000; ++i) {
+      if (i > 0 && sum == E.infinity()) {
+        std::cout << "The order of " << point << " is " << i << std::endl;
+        break;
+      }
+      const auto product = i * point;
+      assert(product == sum);
+      sum = sum + point;
+    }
   });
 
   timeit("check_square_roots", []() {
@@ -49,7 +57,7 @@ int main() {
   });
 
   timeit("prime_count", []() {
-    long long num_primes = 0, max_num = 1'000'000'000;
+    long long num_primes = 0, max_num = 10'000'000;
     for (long long p = 2; p < max_num; p = nt::next_prime(p)) {
       num_primes++;
     }

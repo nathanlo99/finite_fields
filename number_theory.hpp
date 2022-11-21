@@ -111,15 +111,15 @@ constexpr IntegerType jacobi_symbol(IntegerType a, IntegerType n) {
   }
 }
 
-// Given n, s, d, a with n - 1 = 2^s * d, is a a Miller-Rabin witness for the
-// composite-ness of n?
+// Given n, s, d, a with n - 1 = 2^s * d, returns true if and only if a is a
+// Miller-Rabin witness for n
 template <class IntegerType>
 constexpr bool is_miller_rabin_witness(const IntegerType n, IntegerType s,
                                        const IntegerType d,
                                        const IntegerType a) {
   assert(odd_factorization(n - 1) == std::make_pair(s, d));
   IntegerType x = pow_mod(a, d, n), y = 0;
-  while (s) {
+  while (s > 0) {
     y = mul_mod(x, x, n);
     if (y == 1 && x != 1 && x != n - 1)
       return false;
@@ -196,7 +196,11 @@ constexpr inline bool is_prime(const IntegerType n) {
 
 template <class IntegerType>
 constexpr inline IntegerType next_prime(IntegerType n) {
-  assert(n >= 0);
+  if (n < 0)
+    throw std::runtime_error(
+        "next_prime() expected a non-negative integer, got " +
+        std::to_string(n));
+
   // The numbers coprime to 30 are 1 7 11 13 17 19 23 29
   constexpr std::array<IntegerType, 8> small_primes = {2, 2, 3, 5, 5, 7, 7, 11};
   constexpr std::array<IntegerType, 30> offset_table = {

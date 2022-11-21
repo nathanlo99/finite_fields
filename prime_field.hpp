@@ -89,6 +89,10 @@ public:
     return a == b;
   }
 
+  constexpr inline bool operator==(const PrimeField<> &other) const {
+    return p == other.p;
+  }
+
 public:
   friend std::ostream &operator<<(std::ostream &os, const PrimeField &field) {
     return os << "Finite Field of size " << field.p;

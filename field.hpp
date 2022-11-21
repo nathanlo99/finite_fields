@@ -2,6 +2,7 @@
 #pragma once
 
 #include <iostream>
+#include <stdexcept>
 
 template <class Value> class AbstractField {
 public:
@@ -37,17 +38,28 @@ public:
   }
 
   virtual bool eq(const value_t a, const value_t b) const = 0;
+
+  bool operator==(const AbstractField &other) { return false; }
 };
 
 template <class Field> struct FieldElement {
   using element_t = FieldElement<Field>;
   using value_t = typename Field::value_t;
 
-  value_t value;
   const Field &field;
+  value_t value;
 
   FieldElement(const value_t value, const Field &field)
-      : value(value), field(field) {}
+      : field(field), value(value) {}
+  FieldElement(const FieldElement &other)
+      : field(other.field), value(other.value) {}
+  FieldElement &operator=(const FieldElement &other) {
+    if (field != other.field)
+      throw std::runtime_error("Field element cannot be assigned to field "
+                               "element with different base field");
+    value = other.value;
+    return *this;
+  }
 
   constexpr element_t zero(const Field &field) const {
     return FieldElement(field.zero(), field);
