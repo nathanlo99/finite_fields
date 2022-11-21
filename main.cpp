@@ -19,13 +19,8 @@ int main() {
     std::cout << points.size() << " points" << std::endl;
 
     const auto point = points[points.size() / 2];
-    std::cout << "point = " << point << std::endl;
     auto sum = E.infinity();
     for (int i = 0; i < 1'000'000; ++i) {
-      if (i > 0 && sum == E.infinity()) {
-        std::cout << "The order of " << point << " is " << i << std::endl;
-        break;
-      }
       const auto product = i * point;
       assert(product == sum);
       sum = sum + point;

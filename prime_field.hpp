@@ -43,7 +43,7 @@ public:
   constexpr inline value_t zero() const override { return 0; }
   constexpr inline value_t one() const override { return 1; }
 
-  constexpr inline value_t integer(const int64_t value) const override {
+  constexpr inline value_t integer(int64_t value) const override {
     return ((value % p) + p) % p;
   }
 

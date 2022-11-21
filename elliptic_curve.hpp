@@ -48,6 +48,7 @@ template <typename Field> struct EllipticCurve {
       const field_element_t ry = slope * (p.x - rx) - p.y;
       return Point(p.curve, rx, ry);
     }
+    Point &operator+=(const Point &other) { return *this = *this + other; }
 
     friend Point operator*(value_t k, Point p) {
       // TODO: Write Montgomery Ladder or w-NAF
@@ -57,13 +58,14 @@ template <typename Field> struct EllipticCurve {
       Point result = Point::infinity(p.curve);
       while (k > 0) {
         if (k % 2 == 1)
-          result = result + p;
-        p = p + p;
+          result += p;
+        p += p;
         k /= 2;
       }
       return result;
     }
     friend Point operator*(const Point &p, const value_t k) { return k * p; }
+    Point &operator*=(const value_t k) { return *this = k * (*this); }
 
     constexpr inline bool operator==(const Point &other) const {
       return x == other.x && y == other.y && affine == other.affine;

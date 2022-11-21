@@ -15,14 +15,20 @@ public:
 
   // The default is a naive generic double-and-add, but subclasses can override
   // this with custom behaviour, see PrimeField::integer()
-  virtual value_t integer(const int64_t value) const {
+  virtual value_t integer(int64_t value) const {
+    bool negative = false;
+    if (value < 0) {
+      value = -value;
+      negative = true;
+    }
+
     value_t result = zero(), pow = one();
     for (int power_of_two = 1; power_of_two < value; power_of_two <<= 1) {
       if (value & power_of_two)
         result = add(result, pow);
       pow = add(pow, pow);
     }
-    return result;
+    return negative ? neg(result) : result;
   }
 
   virtual value_t neg(const value_t a) const = 0;
