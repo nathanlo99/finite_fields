@@ -18,6 +18,7 @@ inline long long get_time_ms() {
 
 template <typename Func>
 inline void timeit(const std::string_view &msg, const Func &f) {
+  std::cout << "[" << msg << "] | Starting" << std::endl;
   const auto start_ms = get_time_ms();
   f();
   const auto end_ms = get_time_ms();

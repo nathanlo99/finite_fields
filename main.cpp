@@ -7,6 +7,7 @@
 #include "elliptic_curve.hpp"
 #include "fraction.hpp"
 #include "number_theory.hpp"
+#include "polynomial.hpp"
 #include "prime_field.hpp"
 #include "rational_field.hpp"
 #include "timing.hpp"
