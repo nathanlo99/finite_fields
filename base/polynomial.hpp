@@ -19,7 +19,7 @@ template <class Field = RationalField<int64_t>> struct Polynomial {
 public:
   Polynomial(const Field &field, const char variable,
              const std::vector<element_t> &coeffs = {})
-      : field(field), zero(element_t(field.zero(), field)), variable(variable),
+      : field(field), zero(field.element(field.zero())), variable(variable),
         coeffs(coeffs) {
     if (coeffs.empty()) {
       this->coeffs = {element_t(field.zero(), field),
@@ -34,16 +34,15 @@ public:
 
   Polynomial(const Field &field, const char variable,
              const std::vector<value_t> &coeffs)
-      : field(field), zero(element_t(field.zero(), field)), variable(variable),
+      : field(field), zero(field.element(field.zero())), variable(variable),
         coeffs(coeffs.size(), zero) {
     if (coeffs.empty()) {
-      this->coeffs = {element_t(field.zero(), field),
-                      element_t(field.one(), field)};
+      this->coeffs = {field.element(field.zero()), field.element(field.one())};
       return;
     }
 
     for (size_t i = 0; i < coeffs.size(); ++i)
-      this->coeffs[i] = element_t(coeffs[i], field);
+      this->coeffs[i] = field.element(coeffs[i]);
 
     // Remove leading zeroes
     while (this->coeffs.size() > 1 && this->coeffs.back() == zero)
@@ -106,7 +105,7 @@ public:
     return p + k;
   }
   friend Polynomial operator+(const Polynomial &p, const value_t k) {
-    return p + element_t(k, p.field);
+    return p + p.field.element(k);
   }
   friend Polynomial operator+(const value_t k, const Polynomial &p) {
     return p + k;
@@ -116,20 +115,24 @@ public:
     return a + (-b);
   }
 
-  friend Polynomial operator*(const value_t k, const Polynomial &p) {
+  friend Polynomial operator*(const element_t k, const Polynomial &p) {
     const size_t degree_plus_one = p.coeffs.size();
     std::vector<element_t> result_coeffs(degree_plus_one, p.zero);
     // TODO: Parallelize this
-    for (size_t i = 0; i < degree_plus_one; ++i) {
-      result_coeffs[i] = element_t(k, p.field) * p.coeffs[i];
-    }
+    for (size_t i = 0; i < degree_plus_one; ++i)
+      result_coeffs[i] = k * p.coeffs[i];
     return Polynomial(p.field, p.variable, result_coeffs);
   }
-
+  friend Polynomial operator*(const Polynomial &p, const element_t k) {
+    return k * p;
+  }
+  friend Polynomial operator*(const value_t k, const Polynomial &p) {
+    return p * p.field.element(k);
+  }
   friend Polynomial operator*(const Polynomial &p, const value_t k) {
     return k * p;
   }
-
+  Polynomial &operator*=(const element_t k) { return *this = *this * k; }
   Polynomial &operator*=(const value_t k) { return *this = *this * k; }
 
   friend Polynomial operator*(const Polynomial &a, const Polynomial &b) {
@@ -152,7 +155,6 @@ public:
     }
     return Polynomial(a.field, a.variable, result_coeffs);
   }
-
   Polynomial &operator*=(const Polynomial &other) {
     return *this = *this * other;
   }

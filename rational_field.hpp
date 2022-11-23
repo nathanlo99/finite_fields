@@ -22,6 +22,9 @@ public:
   constexpr inline element_t operator()(const int64_t num) const {
     return element_t(value_t(num, 1), *this);
   }
+  constexpr inline element_t element(const value_t num) const {
+    return element_t(num, *this);
+  }
   constexpr inline int64_t characteristic() const override { return 0; }
 
   constexpr inline value_t zero() const override { return fraction_t(0, 1); }

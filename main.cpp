@@ -22,7 +22,7 @@ int main() {
     std::cout << (x ^ 2) + 2 * x + 1 << std::endl;
 
     const auto f = Polynomial(QQ, 'x', {1, 2, 3});
-    const auto g = Polynomial(QQ, 'x', {1, 1, 4});
+    const auto g = Polynomial(QQ, 'x', {1, 6, 6});
 
     std::cout << "f = " << f << std::endl;
     std::cout << "g = " << g << std::endl;
@@ -31,7 +31,7 @@ int main() {
 
     const auto F5 = PrimeField<int64_t>(5);
     const auto h1 = Polynomial(F5, 'x', {1, 2, 3});
-    const auto h2 = Polynomial(F5, 'x', {1, 1, 4});
+    const auto h2 = Polynomial(F5, 'x', {1, 6, 6});
     std::cout << "h1 = " << h1 << std::endl;
     std::cout << "h2 = " << h2 << std::endl;
     std::cout << "h1 / h2 = " << h1 / h2 << std::endl;
