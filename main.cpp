@@ -19,8 +19,9 @@ int main() {
 
   timeit("rational_polynomial", [&]() {
     const auto QQ = RationalField<int64_t>();
+    const auto x = Polynomial(QQ, 'x');
     const auto p = Polynomial(QQ, 'x', {1, 1});
-    std::cout << (p ^ 64) << std::endl;
+    std::cout << ((p - x) ^ 64) << std::endl;
   });
 
   timeit("generate_elliptic_curve_points", [&]() {

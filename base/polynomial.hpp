@@ -18,14 +18,17 @@ template <class Field = RationalField<int64_t>> struct Polynomial {
 
 public:
   Polynomial(const Field &field, const char variable,
-             const std::vector<element_t> &coeffs)
+             const std::vector<element_t> &coeffs = {})
       : field(field), zero(element_t(field.zero(), field)), variable(variable),
         coeffs(coeffs) {
-    if (coeffs.empty())
-      throw math_error("Cannot instantiate Polynomial with empty coefficients");
+    if (coeffs.empty()) {
+      this->coeffs = {element_t(field.zero(), field),
+                      element_t(field.one(), field)};
+      return;
+    }
 
     // Remove leading zeroes
-    while (this->coeffs.size() > 1 && coeffs.back() == zero)
+    while (this->coeffs.size() > 1 && this->coeffs.back() == zero)
       this->coeffs.pop_back();
   }
 
@@ -33,8 +36,11 @@ public:
              const std::vector<value_t> &coeffs)
       : field(field), zero(element_t(field.zero(), field)), variable(variable),
         coeffs(coeffs.size(), zero) {
-    if (coeffs.empty())
-      throw math_error("Cannot instantiate Polynomial with empty coefficients");
+    if (coeffs.empty()) {
+      this->coeffs = {element_t(field.zero(), field),
+                      element_t(field.one(), field)};
+      return;
+    }
 
     for (size_t i = 0; i < coeffs.size(); ++i)
       this->coeffs[i] = element_t(coeffs[i], field);
@@ -120,9 +126,7 @@ public:
     const size_t a_degree = a.coeffs.size() - 1;
     const size_t b_degree = b.coeffs.size() - 1;
     const size_t result_degree = a_degree + b_degree;
-    // TODO: Ring::zero()
-    std::vector<element_t> result_coeffs(result_degree + 1,
-                                         element_t(a.field.zero(), a.field));
+    std::vector<element_t> result_coeffs(result_degree + 1, a.zero);
     for (size_t i = 0; i <= a_degree; ++i) {
       for (size_t j = 0; j <= b_degree; ++j) {
         result_coeffs[i + j] += a[i] * b[j];
