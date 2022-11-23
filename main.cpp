@@ -12,8 +12,17 @@
 #include "rational_field.hpp"
 #include "timing.hpp"
 
+#include <gmpxx.h>
+
+mpz_class factorial(const mpz_class n) {
+  return n <= 1 ? mpz_class(1) : n * factorial(n - 1);
+}
+
 int main() {
-  timeit("rational_polynomial", [&]() {
+  timeit("gmp_test_factorial",
+         []() { std::cout << factorial(100) << std::endl; });
+
+  timeit("rational_polynomials", []() {
     const auto QQ = RationalField<int64_t>();
     const auto x = Polynomial(QQ, 'x');
     std::cout << ((x + 1) ^ 5) << std::endl;
@@ -38,7 +47,7 @@ int main() {
     std::cout << "h1 % h2 = " << h1 % h2 << std::endl; // 4x + 3
   });
 
-  timeit("generate_elliptic_curve_points", [&]() {
+  timeit("generate_elliptic_curve_points", []() {
     PrimeField F = PrimeField(1000003LL);
     const auto E = EllipticCurve(F, 2, 3);
     std::cout << E << std::endl;
