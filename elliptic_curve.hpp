@@ -50,6 +50,8 @@ template <typename Field> struct EllipticCurve {
       return Point(p.curve, rx, ry);
     }
     Point &operator+=(const Point &other) { return *this = *this + other; }
+    friend Point operator-(const Point &p, const Point &q) { return p + (-q); }
+    Point &operator-=(const Point &other) { return *this = *this - other; }
 
     friend Point operator*(value_t k, Point p) {
       // TODO: Write Montgomery Ladder or w-NAF

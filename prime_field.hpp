@@ -83,6 +83,12 @@ public:
     return mul(a, inv(b));
   }
 
+  constexpr inline value_t pow(const value_t a,
+                               const uint64_t exp) const override {
+    assert_in_bounds(a);
+    return nt::pow_mod(a, exp, p);
+  }
+
   constexpr inline bool eq(const value_t a, const value_t b) const override {
     assert_in_bounds(a);
     assert_in_bounds(b);

@@ -55,8 +55,8 @@ constexpr IntegerType mul_mod(const IntegerType a, const IntegerType b,
   return (a * b) % mod;
 }
 
-template <class IntegerType>
-constexpr IntegerType pow_mod(IntegerType base, IntegerType exponent,
+template <class IntegerType, class ExponentType>
+constexpr IntegerType pow_mod(IntegerType base, ExponentType exponent,
                               const IntegerType mod) {
   assert(0 <= base && base < mod);
   if (exponent < 0)
