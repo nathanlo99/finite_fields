@@ -24,18 +24,18 @@ int main() {
     const auto f = Polynomial(QQ, 'x', {1, 2, 3});
     const auto g = Polynomial(QQ, 'x', {1, 6, 6});
 
-    std::cout << "f = " << f << std::endl;
-    std::cout << "g = " << g << std::endl;
-    std::cout << "f / g = " << f / g << std::endl;
-    std::cout << "f % g = " << f % g << std::endl;
+    std::cout << "f = " << f << std::endl;         // 3x^2 + 2x + 1
+    std::cout << "g = " << g << std::endl;         // 6x^2 + 6x + 1
+    std::cout << "f / g = " << f / g << std::endl; // 1/2
+    std::cout << "f % g = " << f % g << std::endl; // -1x + 1/2
 
     const auto F5 = PrimeField<int64_t>(5);
     const auto h1 = Polynomial(F5, 'x', {1, 2, 3});
     const auto h2 = Polynomial(F5, 'x', {1, 6, 6});
-    std::cout << "h1 = " << h1 << std::endl;
-    std::cout << "h2 = " << h2 << std::endl;
-    std::cout << "h1 / h2 = " << h1 / h2 << std::endl;
-    std::cout << "h1 % h2 = " << h1 % h2 << std::endl;
+    std::cout << "h1 = " << h1 << std::endl;           // 3x^2 + 2x + 1
+    std::cout << "h2 = " << h2 << std::endl;           // 1x^2 + 1x + 1
+    std::cout << "h1 / h2 = " << h1 / h2 << std::endl; // 3
+    std::cout << "h1 % h2 = " << h1 % h2 << std::endl; // 4x + 3
   });
 
   timeit("generate_elliptic_curve_points", [&]() {
