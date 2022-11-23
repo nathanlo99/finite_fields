@@ -13,18 +13,35 @@
 #include "timing.hpp"
 
 int main() {
-  PrimeField F = PrimeField(1000003LL);
-  const auto E = EllipticCurve(F, 2, 3);
-  std::cout << E << std::endl;
-
   timeit("rational_polynomial", [&]() {
     const auto QQ = RationalField<int64_t>();
     const auto x = Polynomial(QQ, 'x');
-    const auto p = Polynomial(QQ, 'x', {1, 1});
-    std::cout << ((p - x) ^ 64) << std::endl;
+    std::cout << ((x + 1) ^ 5) << std::endl;
+    const auto y = Polynomial(QQ, 'y');
+    std::cout << ((y + 2) ^ 8) << std::endl;
+    std::cout << (x ^ 2) + 2 * x + 1 << std::endl;
+
+    const auto f = Polynomial(QQ, 'x', {1, 2, 3});
+    const auto g = Polynomial(QQ, 'x', {1, 1, 4});
+
+    std::cout << "f = " << f << std::endl;
+    std::cout << "g = " << g << std::endl;
+    std::cout << "f / g = " << f / g << std::endl;
+    std::cout << "f % g = " << f % g << std::endl;
+
+    const auto F5 = PrimeField<int64_t>(5);
+    const auto h1 = Polynomial(F5, 'x', {1, 2, 3});
+    const auto h2 = Polynomial(F5, 'x', {1, 1, 4});
+    std::cout << "h1 = " << h1 << std::endl;
+    std::cout << "h2 = " << h2 << std::endl;
+    std::cout << "h1 / h2 = " << h1 / h2 << std::endl;
+    std::cout << "h1 % h2 = " << h1 % h2 << std::endl;
   });
 
   timeit("generate_elliptic_curve_points", [&]() {
+    PrimeField F = PrimeField(1000003LL);
+    const auto E = EllipticCurve(F, 2, 3);
+    std::cout << E << std::endl;
     const auto points = E.points();
     std::cout << points.size() << " points" << std::endl;
 

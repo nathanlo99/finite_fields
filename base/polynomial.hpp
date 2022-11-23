@@ -65,6 +65,7 @@ public:
     return *this;
   }
 
+  inline size_t degree() const { return coeffs.size() - 1; }
   inline element_t operator[](const size_t idx) const {
     return idx < coeffs.size() ? coeffs[idx] : zero;
   }
@@ -96,6 +97,21 @@ public:
     return Polynomial(a.field, a.variable, result_coeffs);
   }
 
+  friend Polynomial operator+(const Polynomial &p, const element_t k) {
+    std::vector<element_t> result_coeffs = p.coeffs;
+    result_coeffs[0] += k;
+    return Polynomial(p.field, p.variable, result_coeffs);
+  }
+  friend Polynomial operator+(const element_t k, const Polynomial &p) {
+    return p + k;
+  }
+  friend Polynomial operator+(const Polynomial &p, const value_t k) {
+    return p + element_t(k, p.field);
+  }
+  friend Polynomial operator+(const value_t k, const Polynomial &p) {
+    return p + k;
+  }
+
   friend Polynomial operator-(const Polynomial &a, const Polynomial &b) {
     return a + (-b);
   }
@@ -105,7 +121,7 @@ public:
     std::vector<element_t> result_coeffs(degree_plus_one, p.zero);
     // TODO: Parallelize this
     for (size_t i = 0; i < degree_plus_one; ++i) {
-      result_coeffs[i] = k * p.coeffs[i];
+      result_coeffs[i] = element_t(k, p.field) * p.coeffs[i];
     }
     return Polynomial(p.field, p.variable, result_coeffs);
   }
@@ -113,6 +129,8 @@ public:
   friend Polynomial operator*(const Polynomial &p, const value_t k) {
     return k * p;
   }
+
+  Polynomial &operator*=(const value_t k) { return *this = *this * k; }
 
   friend Polynomial operator*(const Polynomial &a, const Polynomial &b) {
     if (a.field != b.field)
@@ -135,8 +153,6 @@ public:
     return Polynomial(a.field, a.variable, result_coeffs);
   }
 
-  Polynomial &operator*=(const value_t k) { return *this = *this * k; }
-
   Polynomial &operator*=(const Polynomial &other) {
     return *this = *this * other;
   }
@@ -150,6 +166,44 @@ public:
       exp /= 2;
     }
     return result;
+  }
+
+  friend std::pair<Polynomial, Polynomial> divmod(const Polynomial &p,
+                                                  const Polynomial &q) {
+    if (p.field != q.field)
+      throw math_error()
+          << "Cannot divide polynomials with elements from different fields";
+    if (p.variable != q.variable)
+      throw math_error()
+          << "Cannot divide polynomials with two different variables '"
+          << p.variable << "' and '" << q.variable << "'";
+
+    const size_t p_degree = p.degree(), q_degree = q.degree();
+    if (q.coeffs.back() == q.zero)
+      throw math_error() << "Division by zero: " << p << " / " << q;
+    if (p_degree < q_degree)
+      return std::make_pair(Polynomial(p.field, p.variable, {0}), p);
+    const size_t result_degree = p_degree - q_degree;
+    const element_t q_leading_coeff = q.coeffs.back(),
+                    inv_q_leading_coeff = q_leading_coeff.inv();
+    std::vector<element_t> result_coeffs(result_degree + 1, p.zero);
+    std::vector<element_t> p_coeffs = p.coeffs;
+    for (int d = result_degree; d >= 0; --d) {
+      const element_t pivot = p_coeffs[q_degree + d] * inv_q_leading_coeff;
+      result_coeffs[d] = pivot;
+      p_coeffs[q_degree + d] = p.zero;
+      for (size_t i = 0; i < q_degree; ++i)
+        p_coeffs[i + d] -= pivot * q.coeffs[i];
+    }
+    return std::make_pair(Polynomial(p.field, p.variable, result_coeffs),
+                          Polynomial(p.field, p.variable, p_coeffs));
+  }
+
+  friend Polynomial operator/(const Polynomial &p, const Polynomial &q) {
+    return divmod(p, q).first;
+  }
+  friend Polynomial operator%(const Polynomial &p, const Polynomial &q) {
+    return divmod(p, q).second;
   }
 
   friend constexpr bool operator==(const Polynomial &a, const Polynomial &b) {
