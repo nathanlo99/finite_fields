@@ -44,7 +44,16 @@ public:
   virtual value_t div(const value_t a, const value_t b) const {
     return mul(a, inv(b));
   }
-  virtual value_t pow(const value_t a, const uint64_t exp) const = 0;
+  virtual value_t pow(const value_t a, const uint64_t exp) const {
+    value_t base = a, result = one();
+    uint64_t expt = exp;
+    while (expt > 0) {
+      if (expt % 2 == 1)
+        result = mul(result, base);
+      base = mul(base, base);
+    }
+    return result;
+  }
 
   virtual bool eq(const value_t a, const value_t b) const = 0;
 
@@ -85,6 +94,12 @@ template <class Field> struct FieldElement {
   }
   constexpr element_t operator-(const element_t &other) const {
     return element_t(field.sub(value, other.value), field);
+  }
+  constexpr element_t &operator+=(const element_t &other) {
+    return *this = *this + other;
+  }
+  constexpr element_t &operator-=(const element_t &other) {
+    return *this = *this - other;
   }
 
   constexpr element_t inv() const { return element_t(field.inv(value), field); }

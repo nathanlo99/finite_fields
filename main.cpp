@@ -17,6 +17,12 @@ int main() {
   const auto E = EllipticCurve(F, 2, 3);
   std::cout << E << std::endl;
 
+  timeit("rational_polynomial", [&]() {
+    const auto QQ = RationalField<int64_t>();
+    const auto p = Polynomial(QQ, 'x', {1, 1});
+    std::cout << (p ^ 64) << std::endl;
+  });
+
   timeit("generate_elliptic_curve_points", [&]() {
     const auto points = E.points();
     std::cout << points.size() << " points" << std::endl;
