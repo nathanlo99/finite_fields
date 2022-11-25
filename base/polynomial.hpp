@@ -12,18 +12,16 @@ template <class Field = RationalField<int64_t>> struct Polynomial {
   using element_t = typename Field::element_t;
 
   const Field &field;
-  const element_t zero;
+  const element_t zero, one;
   char variable;
   std::vector<element_t> coeffs;
 
-
   Polynomial(const Field &field, const char variable,
              const std::vector<element_t> &coeffs = {})
-      : field(field), zero(field.element(field.zero())), variable(variable),
-        coeffs(coeffs) {
+      : field(field), zero(field.element(field.zero())),
+        one(field.element(field.one())), variable(variable), coeffs(coeffs) {
     if (coeffs.empty()) {
-      this->coeffs = {element_t(field.zero(), field),
-                      element_t(field.one(), field)};
+      this->coeffs = {zero, one};
       return;
     }
 
@@ -35,10 +33,11 @@ template <class Field = RationalField<int64_t>> struct Polynomial {
 public:
   Polynomial(const Field &field, const char variable,
              const std::vector<value_t> &coeffs)
-      : field(field), zero(field.element(field.zero())), variable(variable),
+      : field(field), zero(field.element(field.zero())),
+        one(field.element(field.one())), variable(variable),
         coeffs(coeffs.size(), zero) {
     if (coeffs.empty()) {
-      this->coeffs = {field.element(field.zero()), field.element(field.one())};
+      this->coeffs = {zero, one};
       return;
     }
 
@@ -51,8 +50,8 @@ public:
   }
 
   Polynomial(const Polynomial &other)
-      : field(other.field), zero(other.zero), variable(other.variable),
-        coeffs(other.coeffs) {}
+      : field(other.field), zero(other.zero), one(other.one),
+        variable(other.variable), coeffs(other.coeffs) {}
 
   Polynomial &operator=(const Polynomial &other) {
     if (field != other.field)
@@ -161,7 +160,7 @@ public:
   }
 
   Polynomial operator^(uint64_t exp) const {
-    Polynomial result(field, variable, {1}), pow = *this;
+    Polynomial result(field, variable, {one}), pow = *this;
     while (exp > 0) {
       if (exp % 2 == 1)
         result *= pow;
@@ -185,7 +184,7 @@ public:
     if (q.coeffs.back() == q.zero)
       throw math_error() << "Division by zero: " << p << " / " << q;
     if (p_degree < q_degree)
-      return std::make_pair(Polynomial(p.field, p.variable, {0}), p);
+      return std::make_pair(Polynomial(p.field, p.variable, {p.zero}), p);
     const size_t result_degree = p_degree - q_degree;
     const element_t q_leading_coeff = q.coeffs.back(),
                     inv_q_leading_coeff = q_leading_coeff.inv();
