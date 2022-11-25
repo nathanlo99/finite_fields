@@ -5,6 +5,7 @@
 #include "random.hpp"
 
 #include <array>
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
 #include <string>

@@ -5,6 +5,7 @@
 #include "field.hpp"
 #include "number_theory.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <stdexcept>
@@ -98,7 +99,7 @@ public:
     return a == b;
   }
 
-  constexpr inline bool operator==(const PrimeField<> &other) const {
+  constexpr inline bool operator==(const PrimeField &other) const {
     return p == other.p;
   }
 

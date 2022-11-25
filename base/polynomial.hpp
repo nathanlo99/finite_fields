@@ -16,7 +16,7 @@ template <class Field = RationalField<int64_t>> struct Polynomial {
   char variable;
   std::vector<element_t> coeffs;
 
-public:
+
   Polynomial(const Field &field, const char variable,
              const std::vector<element_t> &coeffs = {})
       : field(field), zero(field.element(field.zero())), variable(variable),
@@ -32,6 +32,7 @@ public:
       this->coeffs.pop_back();
   }
 
+public:
   Polynomial(const Field &field, const char variable,
              const std::vector<value_t> &coeffs)
       : field(field), zero(field.element(field.zero())), variable(variable),
